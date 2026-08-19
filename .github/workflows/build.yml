@@ -1,0 +1,36 @@
+name: Build iOS Tweak
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: macos-latest  # macOS runner is ideal, though Linux works with proper toolchains. macos-latest ensures native tool support.
+
+    steps:
+    # 1. Checkout your tweak source code
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # 2. Set up Theos using a community action
+    - name: Setup Theos
+      uses: beerpiss/theos-action@v1
+      with:
+        theos-sdks: 'https://github.com/theos/sdks'
+
+    # 3. Build the tweak package (.deb)
+    - name: Compile Tweak
+      run: |
+        make package
+      env:
+        THEOS: ${{ github.workspace }}/theos
+
+    # 4. Upload the compiled .deb artifact so you can download it from GitHub
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: com.tweak.package
+        path: packages/*.deb
